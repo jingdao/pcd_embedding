@@ -1,0 +1,175 @@
+%\documentclass[conference]{IEEEtran}
+\documentclass[twoside,10pt]{article}
+\usepackage{amsmath,amsfonts,amsthm,fullpage}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{verbatim}
+\newcommand{\imsize}{0.9\linewidth}
+
+\begin{document}
+
+\onecolumn
+\title{Factor-specific Image Retrieval}
+\author{Jingdao Chen \\
+	\textit{Advisor: Dr. James Hays}
+}
+\date{March 17}
+\maketitle
+
+\section{Introduction}
+Using renderings of 3D CAD models, it is possible to carefully control and distinguish the effect of object style, 
+3D viewpoint, color, and scene lighting configuration on a convolutional neural network (CNN) feature embedding.
+The proposed idea is to perform image retrieval with specific configuration of factors (e.g. objects with similar style but a different viewpoint).
+One related work is~\cite{aubry2015} which quantifies and visualizes the effect of scene factors on CNN responses.
+This work explores the possibility of 2D-3D retrieval using similarity of CNN features but did not consider 2D-2D retrieval.
+Another related work is~\cite{li2015} which uses a joint embedding space that contains information about object 3D structure to train a 2D-based CNN.
+A network trained this way is able to accurately perform cross-view image retrieval where similar objects can be matched even though the images are captured from different viewpoints.
+However this study did not account for other factors such as color,texture and lighting.
+
+\section{Methodology}
+
+The experiment described below aims to obtain a baseline accuracy for image retrieval.  
+The dataset for this experiment is taken from a 3D model repository, ModelNet~\cite{wu2015}.
+Each CAD model is rendered to a series of images with a predetermined configuration of factors using OpenGL.
+This initial experiment considers 10 different classes of objects, 8 different orientations, 5 different background colors, and 4 different foreground colors.
+Some examples of rendered images are shown in Figure \ref{fig:dataset}. This experiment only takes a small number of models from the repository, so there are
+640 images in the training dataset and 160 images in the validation dataset.
+
+The rendered images are passed to a pretrained network, AlexNet~\cite{alex2012}.
+After a single forward pass, the output from \textit{fc7}, \textit{fc6}, and \textit{pool5} layers are extracted and used as a feature representation for the image.
+This baseline feature representation is evaluated with two metrics:
+\begin{itemize}
+	\item \textbf{Classification:} Can the feature representation be used to directly predict the value of a factor for a given image?
+	\item \textbf{Retrieval:} Does the \textit{k} nearest images in feature space contain a matching factor for the query image?
+\end{itemize}
+
+For classification, three different classifiers, namely K-Nearest Neigbor (KNN) with k=1, KNN with k=5, and Support Vector Machine (SVM) are used to
+classify the factors of validation images given the known factors in the training images. For retrieval, each image in the validation set is used as 
+a query image, and the \textit{k} nearest images in feature space from the training set are returned.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\imsize]{dataset}
+\caption{Dataset consisting of rendered CAD models \label{fig:dataset}}
+\end{figure}
+
+\section{Results}
+
+Tables \ref{table:acc1}, \ref{table:acc2}, and \ref{table:acc3} below show the classification accuracies using \textit{fc7}, \textit{fc6}, and \textit{pool5} layers 
+from the pretrained network. The results show that the foreground color and background color are most accurately classified whereas the class and orientation
+are less accurately classified. In addition, the classification accuracies for \textit{pool5} are higher compared to those of \textit{fc6} and \textit{fc7}.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{c|ccc}
+Factor & KNN (k=1) & KNN (k=5) & SVM\\
+\hline
+bgColor & 0.9313 & 0.9500 & 1.0000\\
+fgColor & 0.8125 & 0.8500 & 0.9812\\
+class & 0.5000 & 0.5437 & 0.6813\\
+orientation & 0.4500 & 0.4938 & 0.5062\\
+\end{tabular}
+\caption{Classification accuracy with fc7 layer\label{table:acc1}}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{c|ccc}
+Factor & KNN (k=1) & KNN (k=5) & SVM\\
+\hline
+bgColor & 0.9375 & 0.9313 & 1.0000\\
+fgColor & 0.8688 & 0.9187 & 0.9875\\
+class & 0.5563 & 0.5625 & 0.6937\\
+orientation & 0.5250 & 0.5125 & 0.5625\\
+\end{tabular}
+\caption{Classification accuracy with fc6 layer\label{table:acc2}}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{c|ccc}
+Factor & KNN (k=1) & KNN (k=5) & SVM\\
+\hline
+bgColor & 0.9563 & 0.9688 & 1.0000\\
+fgColor & 0.7625 & 0.7562 & 0.9875\\
+class & 0.5500 & 0.5750 & 0.7375\\
+orientation & 0.5625 & 0.5500 & 0.6438\\
+\end{tabular}
+\caption{Classification accuracy with pool5 layer\label{table:acc3}}
+\end{table}
+
+Tables \ref{table:acc4}, \ref{table:acc5}, and \ref{table:acc6} below show the retrieval accuracies using \textit{fc7}, \textit{fc6}, and \textit{pool5} layers 
+from the pretrained network. These results show a similar trend to the classification accuracies where the \textit{pool5} layer is most accurate
+and the easiest factor to retrieve is the foreground and background colors.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{c|ccc}
+Factor & k=1 & k=3 & k=5\\
+\hline
+class & 0.5312 & 0.7250 & 0.8000\\
+orientation & 0.3875 & 0.6250 & 0.7688\\
+fgColor & 0.7812 & 0.9375 & 0.9812\\
+bgColor & 0.9125 & 0.9625 & 0.9750\\
+\end{tabular}
+\caption{Retrieval accuracy with fc7 layer\label{table:acc4}}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{c|ccc}
+Factor & k=1 & k=3 & k=5\\
+\hline
+class & 0.5250 & 0.7000 & 0.8125\\
+orientation & 0.4188 & 0.6562 & 0.8187\\
+fgColor & 0.8500 & 0.9500 & 0.9688\\
+bgColor & 0.9500 & 0.9875 & 0.9938\\
+\end{tabular}
+\caption{Retrieval accuracy with fc6 layer\label{table:acc5}}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{c|ccc}
+Factor & k=1 & k=3 & k=5\\
+\hline
+class & 0.5813 & 0.7438 & 0.8125\\
+orientation & 0.5188 & 0.7688 & 0.9000\\
+fgColor & 0.7875 & 0.9187 & 0.9750\\
+bgColor & 0.8688 & 0.9812 & 1.0000\\
+\end{tabular}
+\caption{Retrieval accuracy with pool5 layer\label{table:acc6}}
+\end{table}
+
+The image retrieval results can be visualized in Figure \ref{fig:retrieval}. This shows that the foreground and background colors
+between the source and target image are highly correlated whereas the orientation is less accurately matched.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\imsize]{examples}
+\caption{Image retrieval with fc7 layer. Left column shows query image while right column shows the top 5 nearest neighbors.\label{fig:retrieval}}
+\end{figure}
+
+\section{Discussion}
+
+This initial experiment shows that features from a pretrained network contain information about scene factors that can be exploited for image retrieval.
+The next step will consist of fine-tuning the existing network to more explicitly capture the relationship between a feature representation
+and factors such as color, orientation, style and lighting.
+In this case, the user will be able to perform image retrieval and specify a configuration of factors that the user is interested in.
+The follow-up steps to be taken are summarized in the list below:
+
+\begin{itemize}
+	\item Increase the number of training and testing data
+	\item Increase the number of possible orientations and colors
+	\item Consider other factors such as lighting and texture changes
+	\item Fine-tune the network with multiple outputs to specifically respond to each factor
+	\item Implement the retrieval task on natural images
+	\item Formalize the retrieval task as a combination of style,color,orientation
+\end{itemize}
+
+\bibliographystyle{unsrt}
+\bibliography{ref}
+
+\end{document}

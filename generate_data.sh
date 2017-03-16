@@ -8,7 +8,8 @@ sampleID=0
 
 getPLY=false
 getProjection=false
-getFeature=true
+getFeature=false
+renderPLY=true
 
 if $getPLY
 then
@@ -53,4 +54,19 @@ then
 		dst=`printf $dir/%d.png $i`
 		./cld.py $src $dst
 	done
+fi
+
+if $renderPLY
+then
+	rm -f $dir/*.ppm
+	rm -f $dir/factors.txt
+	numModels=`cat $dir/labels.txt | wc -l`
+	((numModels--))
+	cd $dir
+	for i in `seq 0 $numModels`
+	do
+		src=`printf %d.ply $i`
+		~/Documents/PointCloudApp/renderPLY $src ./
+	done
+	cd ..
 fi
