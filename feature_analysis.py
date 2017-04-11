@@ -6,19 +6,20 @@ import sys
 import numpy
 import os
 
-featureFile = 'ModelNet10/pool5.npy'
-labelFile = 'ModelNet10/factors.txt'
+output_dir = 'ModelNet10'
+featureFile = output_dir + '/pool5.npy'
+labelFile = output_dir + '/factors.txt'
 numClasses = 10
 
 if len(sys.argv) > 1:
 	featureFile = sys.argv[1]
 
 f = open(labelFile,'r')
-labels = []
+labelID = []
 for l in f:
-	labels.append([int(i) for i in l.split()])
+	labelID.append([int(i) for i in l.split()])
 f.close()
-labels = numpy.array(labels)
+labelID = numpy.array(labelID)
 
 data = numpy.load(featureFile)
 totalPerClass = int(data.shape[0] / numClasses)
@@ -33,12 +34,15 @@ for i in range(numClasses):
 #import data into matrix format
 features = {'train':data[trainID], 'test':data[testID]}
 labels = {
-	'class': {'train':labels[trainID,0], 'test':labels[testID,0]},
-	'orientation': {'train':labels[trainID,1], 'test':labels[testID,1]},
-	'fgColor': {'train':labels[trainID,2], 'test':labels[testID,2]},
-	'bgColor': {'train':labels[trainID,3], 'test':labels[testID,3]},
+	'class': {'train':labelID[trainID,0], 'test':labelID[testID,0]},
+	'orientation': {'train':labelID[trainID,1], 'test':labelID[testID,1]},
+	'bgColor': {'train':labelID[trainID,3], 'test':labelID[testID,3]},
 }
-
+if output_dir=='ModelNet10':
+	labels['fgColor'] = {'train':labelID[trainID,2], 'test':labelID[testID,2]}
+else:
+	labels['texture'] = {'train':labelID[trainID,2], 'test':labelID[testID,2]}
+	
 #print 'Using features from',featureFile,'...'
 for factor in labels.keys():
 	if factor=='orientation':

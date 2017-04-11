@@ -7,8 +7,9 @@ import sys
 import numpy
 import os
 
-featureFile = 'ModelNet10/pool5.npy'
-labelFile = 'ModelNet10/factors.txt'
+output_dir = 'ModelNet10_large'
+featureFile = output_dir + '/pool5.npy'
+labelFile = output_dir + '/factors.txt'
 numClasses = 10
 
 if len(sys.argv) > 1:
@@ -51,7 +52,10 @@ for i in range(len(examples)):
 s += '-append ../report/examples.png'
 print s
 
-factor=['class','orientation','fgColor','bgColor']
+if output_dir == 'ModelNet10':
+	factor=['class','orientation','fgColor','bgColor']
+else:
+	factor=['class','orientation','texture','bgColor']
 for i in range(4):
 	k_options = [1,3,5]
 	acc={}

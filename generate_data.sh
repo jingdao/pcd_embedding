@@ -1,12 +1,14 @@
 #!/bin/bash
 
 models=/media/jd/9638A1E538A1C519/Users/jchen490/Desktop/3DShapeNetsCode/3DShapeNets/ModelNet10
-dir=ModelNet10
-numSamples=10
+#dir=ModelNet10
+#dir=ModelNet10_texture
+dir=ModelNet10_large
+numSamples=100
 classID=0
 sampleID=0
 
-getPLY=false
+getPLY=true
 getProjection=false
 getFeature=false
 renderPLY=true
