@@ -3,12 +3,12 @@
 models=/media/jd/9638A1E538A1C519/Users/jchen490/Desktop/3DShapeNetsCode/3DShapeNets/ModelNet10
 #dir=ModelNet10
 #dir=ModelNet10_texture
-dir=ModelNet10_large
-numSamples=100
+dir=ModelNet10
+numSamples=10
 classID=0
 sampleID=0
 
-getPLY=true
+getPLY=false
 getProjection=false
 getFeature=false
 renderPLY=true
@@ -21,9 +21,15 @@ then
 		if [ -d $f ]
 		then
 			class=`basename $f`
-			for i in `seq 1 $numSamples`
+			rm -f $dir/samples.txt
+#			for i in $models/$class/test/*.off
+			for i in $models/$class/train/*.off
 			do
-				src=$models/$class/train/$class"_"`printf %04d.off $i`
+				echo $i >> $dir/samples.txt
+			done
+			samples=`sort $dir/samples.txt | head -$numSamples`
+			for src in $samples
+			do
 				dst=`printf $dir/%d.ply $sampleID`
 				./off2ply.py $src $dst
 				echo `printf "%d %s" $classID $class` >> $dir/labels.txt
