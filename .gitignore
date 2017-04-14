@@ -2,3 +2,5 @@ report
 test
 .*.swp
 ModelNet*
+caffe_util/101_ObjectCategories
+caffe_util/architecture/*.caffemodel

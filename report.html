@@ -5,8 +5,8 @@
 <link rel="stylesheet" title="Default" href="styles/github.css">
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>  
 
-<link rel="stylesheet" href="highlighting/styles/default.css">
-<script src="highlighting/highlight.pack.js"></script>
+<!--link rel="stylesheet" href="highlighting/styles/default.css"-->
+<!--script src="highlighting/highlight.pack.js"></script-->
 
 <style type="text/css">
 body {
@@ -120,6 +120,10 @@ td img {
   vertical-align: middle;
 }
 
+th,td {
+	padding:10px;
+}
+
 #contents a {
 }
 </style>
@@ -141,7 +145,69 @@ td img {
 <div style="float: left; padding: 20px">
 <p style="font-size: 14px">Original Image</p>
 <img src="%s" />
+<br><br>
+<form action="random">
+    <input type="submit" value="Pick a random image" />
+</form>
+<br>
+<form id="uploadform" enctype="multipart/form-data" method="post" action="upload">
+   <input id="fileupload" name="myfile" type="file" />
+   <br><br>
+   <input type="submit" value="Upload image" id="submit" />
+</form>
 </div>
+
+<div style="float: right; padding: 20px">
+	<table>
+	<tr>
+		<th>Background Color</th>
+		<th>Class</th>
+		<th>Orientation</th>
+		<th>Texture</th>
+	</tr>
+	<tr>
+		<td><select name="bgColor">
+		<option value="none">none</option>
+		<option value="black">black</option>
+		<option value="white">white</option>
+		<option value="red">red</option>
+		<option value="green">green</option>
+		<option value="blue">blue</option>
+		<option value="yellow">yellow</option>
+		<option value="purple">purple</option>
+		<option value="cyan">cyan</option>
+		<option value="orange">orange</option>
+		<option value="violet">violet</option>
+		</select></td>
+		<td><select name="class">
+		<option value="none">none</option>
+		<option value="chair">chair</option>
+		<option value="dresser">dresser</option>
+		<option value="table">table</option>
+		</select></td>
+		<td><select name="orientation">
+		<option value="none">none</option>
+		<option value="horizontal">horizontal</option>
+		<option value="vertical">vertical</option>
+		<option value="diagonal">diagonal</option>
+		</select></td>
+		<td><select name="texture">
+		<option value="none">none</option>
+		<option value="porcelain">porcelain</option>
+		<option value="checkered">checkered</option>
+		<option value="dark_wood">dark_wood</option>
+		<option value="light_wood">light_wood</option>
+		<option value="bamboo">bamboo</option>
+		<option value="striped">striped</option>
+		<option value="tufted">tufted</option>
+		<option value="cloth">cloth</option>
+		<option value="metallic">metallic</option>
+		<option value="flowery">flowery</option>
+		</select></td>
+	</tr>
+	</table>
+</div>
+
 
 </body>
 </html>
