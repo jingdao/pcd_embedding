@@ -38,7 +38,7 @@ labels = {
 	'orientation': {'train':labelID[trainID,1], 'test':labelID[testID,1]},
 	'bgColor': {'train':labelID[trainID,3], 'test':labelID[testID,3]},
 }
-if output_dir=='ModelNet10':
+if output_dir in ['ModelNet10','ModelNet10_test']:
 	labels['fgColor'] = {'train':labelID[trainID,2], 'test':labelID[testID,2]}
 else:
 	labels['texture'] = {'train':labelID[trainID,2], 'test':labelID[testID,2]}

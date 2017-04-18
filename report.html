@@ -2,7 +2,7 @@
 <head>
 <title>Computer Vision Project</title>
 <link href='http://fonts.googleapis.com/css?family=Nunito:300|Crimson+Text|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
-<link rel="stylesheet" title="Default" href="styles/github.css">
+<!--link rel="stylesheet" title="Default" href="styles/github.css"-->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>  
 
 <!--link rel="stylesheet" href="highlighting/styles/default.css"-->
@@ -70,7 +70,7 @@ a {
 
 .container {
 	margin: 0px auto 0px auto;
-	width: 960px;
+	width: 1500px;
 }
 
 #header {
@@ -111,6 +111,11 @@ a {
 	margin: 0px auto 0px auto;
 }
 
+.icon {
+	width:227px;
+	height:227px;
+}
+
 pre {
 	font-family: 'Droid Sans Mono';
 	font-size: 14px;
@@ -128,23 +133,77 @@ th,td {
 }
 </style>
 <script type="text/javascript">
-    hljs.initHighlightingOnLoad();
+    //hljs.initHighlightingOnLoad();
+	function getQueryParams(qs) {
+		qs = qs.split('+').join(' ');
+
+		var params = {},
+			tokens,
+			re = /[?&]?([^=]+)=([^&]*)/g;
+
+		while (tokens = re.exec(qs)) {
+			params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+		}
+
+		return params;
+	}
+	window.onload = function() {
+		var myStringArray = ["bgColor","class","fgColor","orientation","texture"];
+		var arrayLength = myStringArray.length;
+		var query = getQueryParams(document.location.search);
+		document.getElementById("queryButton").addEventListener('click', function(event) {
+			path = 'report.html?'
+			if (query.id)
+				path += 'id='+query.id+'&';
+			for (var i = 0; i < arrayLength; i++) {
+				p = myStringArray[i];
+				path += p + '=' + document.getElementById(p).selectedIndex + '&';
+			}
+			window.location.href=path;
+		});
+		document.getElementById("retrieveButton").addEventListener('click', function(event) {
+			path = 'report.html?'
+			if (query.id)	
+				path += 'id='+query.id+'&';
+			var radioButtons = document.getElementsByName('option');
+			for (var i = 0; i < radioButtons.length; i++) {
+				if (radioButtons[i].checked) {
+					path += 'retrieve=' + radioButtons[i].value;
+					break;
+				}
+			}
+			window.location.href=path;
+		});
+		for (var i = 0; i < arrayLength; i++) {
+			p = myStringArray[i];
+			if (query[p])
+				document.getElementById(p).selectedIndex = query[p];
+		}
+		if (query['retrieve']) {
+			var radioButtons = document.getElementsByName('option');
+			for (var i = 0; i < radioButtons.length; i++) {
+				if (radioButtons[i].value==query['retrieve']) {
+					radioButtons[i].checked = true;
+					break;
+				}
+			}
+		}
+	};
 </script>
 </head>
 <body>
-<div id="header" >
+<!--div id="header" >
 <div id="headersub">
 <h1><span style="color: #DE3737">Jingdao Chen</span></h1>
 </div>
-</div>
+</div-->
 <div class="container">
-
-<h2>CS 7476 Advanced Computer Vision</h2>
-<h2>Factor-Specific Image Retrieval</h2>
+	
+<h2>CS 7476 Advanced Computer Vision: Attribute-guided Image Retrieval</h2>
 
 <div style="float: left; padding: 20px">
 <p style="font-size: 14px">Original Image</p>
-<img src="%s" />
+<img class='icon' src="%s" />
 <br><br>
 <form action="random">
     <input type="submit" value="Pick a random image" />
@@ -158,15 +217,27 @@ th,td {
 </div>
 
 <div style="float: right; padding: 20px">
+	<span>
+	<div style="float: left; padding: 20px">
+	<input type="radio" name="option" value="bgColor" checked> Background Color<br>
+	<input type="radio" name="option" value="class"> Class <br>
+	<input type="radio" name="option" value="fgColor"> Foreground Color <br>
+	<input type="radio" name="option" value="orientation"> Class + Orientation <br>
+	<input type="radio" name="option" value="texture"> Texture <br>
+	<button id='retrieveButton'>Simple Query</button>
+	<br>
+	</div>
+	<div style="float: left; padding: 20px">
 	<table>
 	<tr>
 		<th>Background Color</th>
 		<th>Class</th>
+		<th>Foreground Color</th>
 		<th>Orientation</th>
 		<th>Texture</th>
 	</tr>
 	<tr>
-		<td><select name="bgColor">
+		<td><select id="bgColor">
 		<option value="none">none</option>
 		<option value="black">black</option>
 		<option value="white">white</option>
@@ -179,19 +250,39 @@ th,td {
 		<option value="orange">orange</option>
 		<option value="violet">violet</option>
 		</select></td>
-		<td><select name="class">
+		<td><select id="class">
 		<option value="none">none</option>
+		<option value="bathtub">bathtub</option>
+		<option value="bed">bed</option>
 		<option value="chair">chair</option>
+		<option value="desk">desk</option>
 		<option value="dresser">dresser</option>
+		<option value="monitor">monitor</option>
+		<option value="night_stand">night_stand</option>
+		<option value="sofa">sofa</option>
 		<option value="table">table</option>
+		<option value="toilet">toilet</option>
 		</select></td>
-		<td><select name="orientation">
+		<td><select id="fgColor">
+		<option value="none">none</option>
+		<option value="black">black</option>
+		<option value="white">white</option>
+		<option value="red">red</option>
+		<option value="green">green</option>
+		<option value="blue">blue</option>
+		<option value="yellow">yellow</option>
+		<option value="purple">purple</option>
+		<option value="cyan">cyan</option>
+		<option value="orange">orange</option>
+		<option value="violet">violet</option>
+		</select></td>
+		<td><select id="orientation">
 		<option value="none">none</option>
 		<option value="horizontal">horizontal</option>
 		<option value="vertical">vertical</option>
 		<option value="diagonal">diagonal</option>
 		</select></td>
-		<td><select name="texture">
+		<td><select id="texture">
 		<option value="none">none</option>
 		<option value="porcelain">porcelain</option>
 		<option value="checkered">checkered</option>
@@ -206,6 +297,17 @@ th,td {
 		</select></td>
 	</tr>
 	</table>
+	<br>
+	<button id='queryButton'>Complex Query</button>
+	<br>
+	</div>
+	</span><br>
+	<table>
+		<tr><td><img class='icon' src="%s" /></td><td><img class='icon' src="%s" /></td><td><img class='icon' src="%s" /></td></tr>
+		<tr><td><img class='icon' src="%s" /></td><td><img class='icon' src="%s" /></td><td><img class='icon' src="%s" /></td></tr>
+		<tr><td><img class='icon' src="%s" /></td><td><img class='icon' src="%s" /></td><td><img class='icon' src="%s" /></td></tr>
+	</table>
+</div>
 </div>
 
 

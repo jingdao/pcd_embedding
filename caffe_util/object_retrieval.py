@@ -68,26 +68,6 @@ classification_names = {
 alexnet = caffe.Net(model_def,model_weights,caffe.TEST)
 alexnet.blobs['data'].reshape(1,3,227,227)
 print 'Loaded AlexNet'
-	
-images = []
-image_names = []
-image_dir = '101_ObjectCategories/test'
-#image_list = ['image_%04d.jpg' % i for i in range(1,63)]
-#image_dir = 'E:/jd/Documents/pcd_embedding/ModelNet10_large'
-image_list = [str(i)+'.ppm' for i in range(60)]
-for i in image_list:
-	if i.endswith('.jpg') or i.endswith('.ppm'):
-		I=scipy.misc.imread(image_dir + '/' + i)
-		if len(I.shape) == 2:
-			I=scipy.misc.imresize(I,(227,227))
-			I=numpy.array([I[:,:] - mu[0],I[:,:] - mu[1],I[:,:] - mu[2]])
-		else:
-			I=scipy.misc.imresize(I,(227,227,3))
-			I=numpy.array([I[:,:,2] - mu[0],I[:,:,1] - mu[1],I[:,:,0] - mu[2]])
-		images.append(I)
-		image_names.append(i)
-	
-print 'Loaded %d images' % len(images)
 
 nets = {
 	'class': caffe.Net('architecture/pool5_class.prototxt','architecture/class.caffemodel',caffe.TEST),
@@ -105,23 +85,37 @@ for k in nets:
 	else:
 		nets[k].blobs['label'].reshape(1,3)
 nbrs={
-	'fgColor': NearestNeighbors(n_neighbors=1, algorithm='brute').fit(numpy.array(regression_values['fgColor'])/255.0),
-	'bgColor': NearestNeighbors(n_neighbors=1, algorithm='brute').fit(numpy.array(regression_values['bgColor'])/255.0),
+	'fgColor': NearestNeighbors(n_neighbors=1, algorithm='brute').fit(numpy.array(regression_values['fgColor'])/127.5 - 1),
+	'bgColor': NearestNeighbors(n_neighbors=1, algorithm='brute').fit(numpy.array(regression_values['bgColor'])/127.5 - 1),
 	#'orientation': NearestNeighbors(n_neighbors=1, algorithm='brute').fit(regression_values['orientation']),
 }
-
 print 'Loaded finetuned nets'
+
+image_names = []
+image_dir = '101_ObjectCategories/imagenet'
+image_list = [str(i)+'.jpg' for i in range(2465)]
+#image_dir = '101_ObjectCategories/chair'
+#image_list = ['image_%04d.jpg' % i for i in range(1,63)]
+#image_dir = '101_ObjectCategories/test'
+#image_list = ['%d.jpg' % i for i in range(0,2400)]
 
 features={k:[] for k in nets.keys()}
 features['_pool5']=[]
 start = time.clock()
-for i in range(len(images)):
-	d = images[i]
-	alexnet.blobs['data'].data[0,:,:,:] = d
+for i in image_list:
+	I=scipy.misc.imread(image_dir + '/' + i)
+	if len(I.shape) == 2:
+		I=scipy.misc.imresize(I,(227,227))
+		I=numpy.array([I[:,:] - mu[0],I[:,:] - mu[1],I[:,:] - mu[2]])
+	else:
+		I=scipy.misc.imresize(I,(227,227,3))
+		I=numpy.array([I[:,:,2] - mu[0],I[:,:,1] - mu[1],I[:,:,0] - mu[2]])
+	image_names.append(i)
+	alexnet.blobs['data'].data[0,:,:,:] = I
 	output = alexnet.forward()
 	pool5 = numpy.resize(alexnet.blobs['pool5'].data[0],9216)
 	features['_pool5'].append(pool5)
-	s = image_names[i]
+	s = image_names[-1]
 	for k in sorted(nets.keys()):
 		nets[k].blobs['data'].data[0,:] = pool5
 		nets[k].forward()
@@ -139,11 +133,11 @@ for i in range(len(images)):
 			#s += ' ' + str(id)
 	print s
 end = time.clock()
-avgtime = (end - start) / len(images)
+avgtime = (end - start) / len(image_names)
 print 'Average time: %.3fs' % avgtime
 
-indices  = [[i for i in range(len(images))]]
-signature = numpy.zeros((len(images),29),dtype=numpy.float32)
+indices  = [[i for i in range(len(image_names))]]
+signature = numpy.zeros((len(image_names),29),dtype=numpy.float32)
 j = 0
 for k in sorted(features.keys()):
 	if not k=='_pool5':
@@ -162,18 +156,19 @@ numpy.save('%s/signature.npy' % image_dir,signature)
 num_samples = 5
 template = numpy.zeros((170*num_samples,len(indices[0])*100+20,3),dtype=numpy.uint8)
 def get_image(i):
-	I=scipy.misc.imread(image_dir + '/' + image_names[i])
+	I=scipy.misc.imread(image_dir + '/' + image_names[i],mode='RGB')
 	if len(I.shape) == 2:
 		I=scipy.misc.imresize(I,(150,100))
 		I=numpy.dstack((I,I,I))
 	else:
 		I=scipy.misc.imresize(I,(150,100,3))
 	return I
-print sorted(features.keys())
-for i in range(num_samples):
+for n in range(num_samples):
+	i = numpy.random.randint(len(indices))
 	print indices[i]
-	template[170*i:170*i+150, :100, :] = get_image(indices[i][0])
+	template[170*n:170*n+150, :100, :] = get_image(indices[i][0])
 	for j in range(1,len(indices[i])):
-		template[170*i:170*i+150, 20+j*100:20+(j+1)*100, :] = get_image(indices[i][j])
-scipy.misc.imsave('%s/template.jpg' % image_dir, template)
+		template[170*n:170*n+150, 20+j*100:20+(j+1)*100, :] = get_image(indices[i][j])
+if num_samples > 0:
+	scipy.misc.imsave('%s/template.jpg' % image_dir, template)
 	

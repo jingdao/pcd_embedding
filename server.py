@@ -4,27 +4,28 @@ import SocketServer
 import urlparse
 import random
 from cgi import parse_header, parse_multipart
+import image_server
 
 class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 	def do_GET(self):
 		if self.path.startswith('/random'):
-			url = '/report.html?id=%s' % random.randint(1,62)
+			url = '/report.html?id=%s' % random.randint(0,len(image_server.image_list))
 			self.send_response(302,'')
 			self.send_header('Location',url)
 			self.end_headers()
-		if self.path.startswith('/report.html'):
+		elif self.path.startswith('/report.html'):
 			f = open('report.html','r')
 			data = f.read()
 			query = urlparse.parse_qs(urlparse.urlparse(self.path).query)
-			if 'id' in query:
-				try:
-					original_id = int(query['id'][0])
-				except ValueError:
-					pass
-				original_path = '/%s/image_%04d.jpg' % ('caffe_util/101_ObjectCategories/chair',original_id)
-			else:
-				original_path = '/default.jpg'
-			http_response = data % (original_path)
+			original_path = image_server.get_path_from_id(query['id'][0] if 'id' in query else None)
+			param = [original_path] + ['']*9
+			if 'retrieve' in query:
+				top = image_server.get_retrieval_results(original_path,query)
+				param[1:len(top)+1] = top
+			elif 'bgColor' in query:
+				top = image_server.get_query_results(original_path,query)
+				param[1:len(top)+1] = top
+			http_response = data % tuple(param)
 
 			self.send_response(200,'')
 			self.send_header('Content-Length',len(http_response))

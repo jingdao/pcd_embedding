@@ -7,7 +7,7 @@ import sys
 import numpy
 import os
 
-output_dir = 'ModelNet10_large'
+output_dir = 'ModelNet10_test'
 featureFile = output_dir + '/pool5.npy'
 labelFile = output_dir + '/factors.txt'
 numClasses = 10
@@ -37,6 +37,7 @@ labels = {'train':labels[trainID], 'test':labels[testID]}
 
 nbrs = NearestNeighbors(n_neighbors=5, algorithm='brute').fit(features['train'])
 dist, index = nbrs.kneighbors(features['test'])
+rand_index = numpy.random.randint(len(trainID),size=index.shape)
 
 examples = [0,16,32]
 s = 'convert '
@@ -52,10 +53,22 @@ for i in range(len(examples)):
 s += '-append ../report/examples.png'
 print s
 
-if output_dir == 'ModelNet10':
+if output_dir in ['ModelNet10','ModelNet10_test']:
 	factor=['class','orientation','fgColor','bgColor']
 else:
 	factor=['class','orientation','texture','bgColor']
+for i in range(4):
+	k_options = [1,3,5]
+	acc={}
+	for k in k_options:
+		N = index.shape[0]
+		idl = numpy.resize(rand_index[:,:k].transpose(),N * k)
+		truth = numpy.tile(labels['test'][:,i],k)
+		match = truth == labels['train'][idl,i]
+		if k > 1:
+			match = numpy.any(numpy.resize(match,(k,N)).transpose(),axis=1)
+		acc[k] = 1.0 * numpy.sum(match) / N
+	print '%s & %.4f & %.4f & %.4f\\\\' % (factor[i],acc[k_options[0]],acc[k_options[1]],acc[k_options[2]])
 for i in range(4):
 	k_options = [1,3,5]
 	acc={}

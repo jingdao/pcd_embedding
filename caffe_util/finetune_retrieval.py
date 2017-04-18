@@ -41,7 +41,7 @@ nets = {
 	'orientation': caffe.Net('architecture/pool5_orientation.prototxt','architecture/orientation.caffemodel',caffe.TEST),
 	'bgColor': caffe.Net('architecture/pool5_color.prototxt','architecture/bgColor.caffemodel',caffe.TEST)
 }
-if output_dir.endswith('ModelNet10'):
+if output_dir.endswith('ModelNet10') or output_dir.endswith('ModelNet10_test'):
 	factor=['class','orientation','fgColor','bgColor']
 	nets['fgColor'] = caffe.Net('architecture/pool5_color.prototxt','architecture/fgColor.caffemodel',caffe.TEST)
 else:
@@ -49,9 +49,9 @@ else:
 	nets['texture'] = caffe.Net('architecture/pool5_class.prototxt','architecture/texture.caffemodel',caffe.TEST)
 	
 def softmax(x):
-    #e_x = numpy.exp(x - numpy.max(x))
-    #return e_x / e_x.sum()
-	return x
+    e_x = numpy.exp(x - numpy.max(x))
+    return e_x / e_x.sum()
+	#return x
 nbrs = [None] * len(factor)
 index = [None] * len(factor)
 for i in range(len(factor)):
